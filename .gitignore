@@ -1,0 +1,7 @@
+node_modules
+.DS_Store
+dist
+.npmrc
+.cache
+.vscode
+down
