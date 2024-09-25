@@ -1,5 +1,5 @@
 
-const { scrapeNovel } = require('../scraper.js')
+const { scrapeNovel } = require('../tool/scraper.js')
 
 // 我有一剑
 const config = {

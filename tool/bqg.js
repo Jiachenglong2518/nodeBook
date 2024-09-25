@@ -18,7 +18,8 @@ async function scrapeNovel({
   chapterLinksClass,
   chapterContentClass,
   chapterTitleClass,
-  outputRootFilePath = './down'
+  outputRootFilePath = './down',
+  origin = '',
 }) {
   try {
     // 获取目录页HTML
@@ -27,29 +28,33 @@ async function scrapeNovel({
 
     // 解析目录页，获取所有章节链接
     const $ = cheerio.load(directoryHtml);
-    const chapterLinks =  $(chapterLinksClass).map((i, el) => $(el).attr('href'));
+    const chapterLinks =  $(chapterLinksClass).map((i, el) => {
+      return origin +  $(el).attr('href')
+    } );
     const title = $(nameClass).text().trim();
     console.log(`共发现 ${chapterLinks.length} 章节`);
 
-    const outputFilePath = `${outputRootFilePath}/${title}.txt`
+    const outputFilePath = `${outputRootFilePath}/${title}_2.txt`
     // 创建并打开输出文件
     const outputFileStream = fs.createWriteStream(`${outputFilePath}`);
 
     // 按顺序爬取每个章节内容，并写入文件
     for (let i = 0; i < chapterLinks.length; i++) {
       const chapterUrl = `${chapterLinks[i]}`;
+      await new Promise(resolve => setTimeout(resolve, 2000));
       const chapterResponse = await axios.get(chapterUrl);
       const chapterHtml = chapterResponse.data;
-
       const $chapter = cheerio.load(chapterHtml);
       const chapterTitle = $chapter(chapterTitleClass).text().trim();
-      const chapterContent = $chapter(chapterContentClass).text()
+      const chapterContent = $chapter(chapterContentClass)
+        .text()
         .replace('/    /g', '  ')
-        .replace('/最新网址：www.77shuku.la      /', '')
+        .replace('/最新网址：www.77shuku.la          /g', '')
         .trim();
+        
 
       // 将章节标题与内容写入文件，之间以空行分隔
-      outputFileStream.write(`第${i + 1}章 ${chapterTitle}\n\n${chapterContent}\n\n`);
+      outputFileStream.write(`${chapterContent}\n\n`);
       console.log(`已爬取第${i + 1}章 ${chapterTitle}`);
       // 可选：实时更新文件，便于查看进度（可能会降低性能）
       // outputFileStream.flush();
