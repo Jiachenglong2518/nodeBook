@@ -1,6 +1,6 @@
 
 const { scrapeNovel } = require('../tool/scraper.js')
-
+// 清河文学网
 const config = {
   directoryUrl : `https://www.qhyrzs.com/42206/`, // 假设目录页URL
   nameClass : '#info h1',
