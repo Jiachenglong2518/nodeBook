@@ -27,10 +27,11 @@ async function scrapeNovel({
 
     // 解析目录页，获取所有章节链接
     const $ = cheerio.load(directoryHtml);
-    const chapterLinks =  $(chapterLinksClass).map((i, el) => $(el).attr('href'));
+    const chapterLinks =  $(chapterLinksClass).map((i, el) => {
+      return directoryUrl +  $(el).attr('href')
+    });
     const title = $(nameClass).text().trim();
     console.log(`共发现 ${chapterLinks.length} 章节`);
-
     const outputFilePath = `${outputRootFilePath}/${title}.txt`
     // 创建并打开输出文件
     const outputFileStream = fs.createWriteStream(`${outputFilePath}`);
@@ -40,13 +41,11 @@ async function scrapeNovel({
       const chapterUrl = `${chapterLinks[i]}`;
       const chapterResponse = await axios.get(chapterUrl);
       const chapterHtml = chapterResponse.data;
-
       const $chapter = cheerio.load(chapterHtml);
       const chapterTitle = $chapter(chapterTitleClass).text().trim();
       const chapterContent = $chapter(chapterContentClass)
         .text()
         .replace('/    /g', '  ')
-        .replace('/最新网址：www.77shuku.la          /g', '')
         .trim();
 
       // 将章节标题与内容写入文件，之间以空行分隔
