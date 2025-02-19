@@ -38,21 +38,23 @@ async function scrapeNovel({
 
     // 按顺序爬取每个章节内容，并写入文件
     for (let i = 0; i < chapterLinks.length; i++) {
-      const chapterUrl = `${chapterLinks[i]}`;
-      const chapterResponse = await axios.get(chapterUrl);
-      const chapterHtml = chapterResponse.data;
-      const $chapter = cheerio.load(chapterHtml);
-      const chapterTitle = $chapter(chapterTitleClass).text().trim();
-      const chapterContent = $chapter(chapterContentClass)
-        .text()
-        .replace('/    /g', '  ')
-        .trim();
-
-      // 将章节标题与内容写入文件，之间以空行分隔
-      outputFileStream.write(`${chapterTitle}\n\n${chapterContent}\n\n`);
-      console.log(`已爬取第${i + 1}章 ${chapterTitle}`);
-      // 可选：实时更新文件，便于查看进度（可能会降低性能）
-      // outputFileStream.flush();
+      try {
+        const chapterUrl = `${chapterLinks[i]}`;
+        const chapterResponse = await axios.get(chapterUrl);
+        const chapterHtml = chapterResponse.data;
+        const $chapter = cheerio.load(chapterHtml);
+        const chapterTitle = $chapter(chapterTitleClass).text().trim();
+        const chapterContent = $chapter(chapterContentClass)
+          .text()
+          .replace('/    /g', '  ')
+          .trim();
+  
+        // 将章节标题与内容写入文件，之间以空行分隔
+        outputFileStream.write(`${chapterTitle}\n\n${chapterContent}\n\n`);
+        console.log(`已爬取第${i + 1}章 ${chapterTitle}`);
+      } catch (error) {
+        console.error('爬取第', i + 1, '章时发生错误:', error);
+      }
     }
 
     // 关闭输出文件流
